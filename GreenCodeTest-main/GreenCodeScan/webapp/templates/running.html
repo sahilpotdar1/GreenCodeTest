@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Green CodeRefiner - Processing</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='variables.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='running.css') }}">
+    </head>
+<body>
+    <header class="header">
+        <div class="header-content container">
+            <div class="logo-container">
+                <i class="fas fa-leaf logo-icon"></i>
+                <div class="header-titles">
+                    <h1 class="green">Green</h1>
+                    <h1 class="coderefiner">CodeRefiner<sup>TM</sup></h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content fade-in">
+        <div class="container">
+            <div class="processing-card">
+                <div class="processing-header">
+                    <h2 class="processing-title">
+                        <i class="fas fa-cog fa-spin"></i>
+                        Processing Your Code
+                    </h2>
+                    <p class="processing-subtitle">We're analyzing and optimizing your code for better efficiency</p>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-status">
+                            <span id="status" class="progress-text">Initializing...</span>
+                            <span class="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stages">
+                        <div id="step1" class="stage" data-stage="1">
+                            <div class="stage-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stage-content">
+                                <h3 class="stage-title">Server Emissions Analysis</h3>
+                                <p class="stage-description">Analyzing server-side emissions impact</p>
+                            </div>
+                        </div>
+                        <div id="step2" class="stage" data-stage="2">
+                            <div class="stage-icon">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <div class="stage-content">
+                                <h3 class="stage-title">Azure Marketplace Analysis</h3>
+                                <p class="stage-description">Evaluating cloud resource efficiency</p>
+                            </div>
+                        </div>
+                        <div id="step3" class="stage" data-stage="3">
+                            <div class="stage-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stage-content">
+                                <h3 class="stage-title">Emissions Tracking</h3>
+                                <p class="stage-description">Calculating total emissions footprint & Generating report</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="completion-message hidden">
+                        <div class="success-animation">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3>Process Complete!</h3>
+                        <p>Your code has been successfully analyzed and optimized.</p>
+                    </div>
+
+                    <div id="timerOverlay" class="timer-overlay hidden">
+                        <div class="timer-content">
+                            <h3>
+                                <i class="fas fa-file-alt"></i>
+                                Report Generating
+                            </h3>
+                            <div class="timer-circle">
+                                <div id="timerCountdown" class="timer-countdown">30</div>
+                                <svg class="timer-svg">
+                                    <circle class="timer-progress" cx="50" cy="50" r="45"></circle>
+                                </svg>
+                            </div>
+                            <p>Please wait while we prepare your detailed report</p>
+                        </div>
+                    </div>
+
+                    <div class="report-section hidden">
+                        <h3>
+                            <i class="fas fa-clipboard-list"></i>
+                            Report Summary
+                        </h3>
+                        <div class="report-content">
+                            <pre id="reportText" class="report-text">{{ report_url }}</pre>
+                            <button id="copyButton" class="copy-button" disabled>
+                                <i class="fas fa-copy"></i>
+                                <span class="button-text">Copy Report</span>
+                                <span class="tooltip">Processing in progress...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentProgress = 0;
+            const progressFill = document.querySelector('.progress-fill');
+            const progressPercentage = document.querySelector('.progress-percentage');
+            const timerOverlay = document.getElementById('timerOverlay');
+            const timerCountdown = document.getElementById('timerCountdown');
+            const timerProgress = document.querySelector('.timer-progress');
+            const processingTitle = document.querySelector('.processing-title');
+            
+            function updateProgress(stage) {
+                const progress = stage * 33.33;
+                progressFill.style.width = `${progress}%`;
+                progressPercentage.textContent = `${Math.round(progress)}%`;
+                
+                // When progress reaches 100%, trigger completion
+                if (progress >= 100) {
+                    completeProcessing();
+                }
+            }
+        
+            function completeProcessing() {
+                // Update the spinning cog to completed check
+                processingTitle.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    Processing Completed
+                `;
+        
+                // Show completion message
+                document.querySelector('.completion-message').classList.remove('hidden');
+                
+                // Show and enable report section
+                const reportSection = document.querySelector('.report-section');
+                reportSection.classList.remove('hidden');
+                
+                // Enable copy button
+                const copyButton = document.getElementById('copyButton');
+                copyButton.disabled = false;
+                copyButton.querySelector('.tooltip').textContent = 'Click to copy report';
+        
+                // Start the report timer
+                startReportTimer();
+        
+                // Close EventSource connection
+                if (window.eventSource) {
+                    window.eventSource.close();
+                }
+            }
+        
+            function startReportTimer() {
+                const reportUrl = document.getElementById('reportText').textContent.trim();
+                
+                timerOverlay.classList.remove('hidden');
+                let timeLeft = 30;
+                const totalTime = 30;
+                
+                const timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerCountdown.textContent = timeLeft;
+                    
+                    const progress = ((totalTime - timeLeft) / totalTime) * 283;
+                    timerProgress.style.strokeDashoffset = 283 - progress;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        handleReportCompletion(reportUrl);
+                    }
+                }, 1000);
+            }
+        
+            function handleReportCompletion(reportUrl) {
+                timerOverlay.innerHTML = `
+                    <div class="timer-content">
+                        <h3><i class="fas fa-check-circle"></i> Report Ready</h3>
+                        <p>Copy the URL of your report from the report summary and paste it in another window.</p>
+                        <a href="${reportUrl}" class="btn btn-primary">
+                            <i class="fas fa-exclamation-triangle" style="color:orange;"></i> 
+                            Do not refresh the browser because the GCR container is closed due to process is completed.
+                        </a>
+                    </div>
+                `;
+                
+                if (reportUrl && reportUrl !== '{{ report_url }}') {
+                    setTimeout(() => {
+                        window.location.href = reportUrl;
+                    }, 3000);
+                }
+            }
+        
+            // Initialize EventSource and store it globally
+            window.eventSource = new EventSource('/stream');
+            let lastProcessedStage = 0;
+        
+            window.eventSource.onmessage = function(event) {
+                const log = event.data;
+                document.getElementById('status').textContent = log;
+        
+                // Update stages based on log messages
+                if (log.includes("Running server_emissions.py...") && lastProcessedStage < 1) {
+                    document.getElementById("step1").classList.add("completed");
+                    updateProgress(1);
+                    lastProcessedStage = 1;
+                } else if (log.includes("Running GreenCodeRefiner.py...") && lastProcessedStage < 2) {
+                    document.getElementById("step2").classList.add("completed");
+                    updateProgress(2);
+                    lastProcessedStage = 2;
+                } else if (log.includes("Running track_emissions.py...") && lastProcessedStage < 3) {
+                    document.getElementById("step3").classList.add("completed");
+                    updateProgress(3);
+                    lastProcessedStage = 3;
+                }
+            };
+        
+            window.eventSource.onerror = function(error) {
+                console.error('EventSource failed:', error);
+                // Don't immediately close the connection on error
+                // Instead, try to recover if possible
+                if (lastProcessedStage === 3) {
+                    completeProcessing();
+                }
+            };
+        
+            // Ensure cleanup on page unload
+            window.addEventListener('beforeunload', () => {
+                if (window.eventSource) {
+                    window.eventSource.close();
+                }
+            });
+        
+            // Copy functionality
+            document.getElementById('copyButton').addEventListener('click', async () => {
+                const reportText = document.getElementById('reportText').textContent;
+                try {
+                    await navigator.clipboard.writeText(reportText);
+                    const button = document.getElementById('copyButton');
+                    button.classList.add('copied');
+                    button.innerHTML = `
+                        <i class="fas fa-check"></i>
+                        <span class="button-text">Copied!</span>
+                    `;
+                    setTimeout(() => {
+                        button.classList.remove('copied');
+                        button.innerHTML = `
+                            <i class="fas fa-copy"></i>
+                            <span class="button-text">Copy Report</span>
+                        `;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text:', err);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Green CodeRefiner Configuration</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='variables.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='buttons.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='alerts.css') }}">    
+    </head>
+<body>
+    <header class="header">
+        <div class="header-content container">
+            <div class="logo-container">
+                <i class="fas fa-leaf logo-icon"></i>
+                <div class="header-titles">
+                    <h1 class="green">Green</h1>
+                    <h1 class="coderefiner">CodeRefiner<sup>TM</sup></h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content fade-in">
+        <div class="container">
+            <div class="config-card">
+                <h2 class="page-title">Configure Green CodeRefiner</h2>
+                <p class="page-description">Set up your project configuration to optimize code and reduce carbon emissions.</p>
+                
+                <form id="config-form" class="config-form" action="{{ url_for('save_config') }}" method="POST" onsubmit="handleFormSubmission(event);">
+                    <div class="form-section">
+                        <h3 class="section-title">Project Settings</h3>
+                        
+                        <div class="form-group">
+                            <label for="project_path" class="form-label">
+                                Project Path
+                                <span class="info-icon" data-tooltip="Write your project path here...">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <div class="input-group">
+                                <input type="text" 
+                                       id="project_path" 
+                                       name="project_path" 
+                                       class="form-input"
+                                       placeholder="path/of/your/solution/directory"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="azure_model" class="form-label">
+                                LLM Model
+                                <span class="info-icon" data-tooltip="Select the LLM model to use for code processing.">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <select id="azure_model" name="azure_model" class="form-select">
+                                <option value="GPT4o">GPT4o</option>
+                                <option value="gpt-4o-mini">gpt-4o-mini</option>
+                                <option value="qwen-1.5b">qwen-1.5b</option>
+                                <option value="qwen-coder">qwen-coder</option>
+                                <option value="qwen-32b">qwen-32b</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Prompt Configuration</h3>
+                        
+                        <div class="form-group">
+                            <label for="prompt_1" class="form-label">
+                                Optimize for Efficiency
+                                <span class="info-icon" data-tooltip="Configure this unified prompt to guide overall code optimization and testing.">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <select id="prompt_1" name="prompt_1" class="form-select">
+                                <option value="y" selected>Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prompt_2_text" class="form-label">
+                                Custom Prompt (Optional)
+                                <span class="info-icon" data-tooltip="Add your own custom prompt for code optimization.">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <div class="input-group">
+                                <input type="text" 
+                                       id="prompt_2_text" 
+                                       name="prompt_2_text" 
+                                       class="form-input"
+                                       placeholder="Enter your custom prompt...">
+                                <select id="prompt_2" name="prompt_2" class="form-select compact">
+                                    <option value="y">Yes</option>
+                                    <option value="n" selected>No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prompt_generate_testcases" class="form-label">
+                                Generate Test Cases
+                                <span class="info-icon" data-tooltip="Generating test cases helps identify and reduce carbon emissions footprint.">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                            </label>
+                            <select id="prompt_generate_testcases" name="prompt_generate_testcases" class="form-select">
+                                <option value="y" selected>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" id="save-config" class="btn btn-primary">
+                            <span class="button-text">
+                                <i class="fas fa-save"></i>
+                                Save Configuration
+                            </span>
+                            <div class="button-loader"></div>
+                        </button>
+                        <button type="submit" id="run-button" class="btn btn-success" disabled form="run-form">
+                            <i class="fas fa-play"></i>
+                            Run Green CodeRefiner
+                        </button>
+                    </div>
+                </form>
+
+                <form id="run-form" method="POST" action="/run" class="hidden"></form>
+                
+                <div id="alert-box" class="alert" role="alert"></div>
+            </div>
+        </div>
+    </main>
+
+
+
+<script>      
+    // Function to validate if the entered text is a valid path
+    function isValidPath(path) {
+        // Basic validation: Check if the path contains at least one forward or backward slash
+        return /[\\/]/.test(path);
+    }
+
+    // Function to normalize the path (replace backward slashes with forward slashes)
+    function normalizePath(path) {
+        return path.replace(/\\/g, '/');
+    }
+    // Form validation and submission logic
+    function validateAndSubmitForm() {
+        document.getElementById('run-button').disabled = true;
+        const project_path = document.getElementById('project_path').value.trim();
+        const promptSelect = document.getElementById('prompt_1');
+        let isPromptSelected = false;
+    
+        if (!project_path) {
+            showAlert("The 'Report Path' field is mandatory.");
+            return false;
+        }
+
+        // Validate if the entered text is a valid path
+        if (!isValidPath(project_path)) {
+            showAlert("Please enter a valid path (e.g., 'path/to/folder' or 'path\\to\\folder').");
+            return false;
+        }
+        
+        // Normalize the path (replace backward slashes with forward slashes)
+        const normalizedPath = normalizePath(project_path);
+        document.getElementById('project_path').value = normalizedPath;
+    
+        // Check if the unified prompt is enabled
+        if (promptSelect.value === "y") {
+            isPromptSelected = true;
+        } else {
+            promptSelect.classList.add('error');
+        }
+    
+        if (!isPromptSelected) {
+            showAlert("The unified 'Configure Prompt' must be set to 'Yes'.");
+            return false;
+        }
+    
+        return true;
+    }
+    
+    function handleFormSubmission(event) {
+        event.preventDefault();
+    
+        if (!validateAndSubmitForm()) return;
+    
+        const form = document.getElementById('config-form');
+        const saveButton = document.getElementById('save-config');
+        const runButton = document.getElementById('run-button');
+        const inputs = form.querySelectorAll('input, select');
+        const project_path = document.getElementById('project_path').value.trim();
+    
+        if (!project_path) {
+            showAlert("Please enter a valid Report Path.");
+            return;
+        }
+    
+        // Add loading state
+        saveButton.classList.add('loading');
+        saveButton.disabled = true;
+    
+        // Collect form data
+        const formData = new FormData(form);
+    
+        // Send the form data via AJAX
+        fetch(form.action, {
+            method: form.method,
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    showAlert("Configuration saved! You can now start Green CodeRefiner!", true);
+                    inputs.forEach(input => input.disabled = true);
+                    runButton.disabled = false;
+                } else {
+                    throw new Error('Failed to save configuration');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert("An error occurred while saving the configuration. Please try again.", false);
+                saveButton.disabled = false;
+            })
+            .finally(() => {
+                // Remove loading state and change button text
+                setTimeout(() => {
+                    saveButton.classList.remove('loading');
+                    saveButton.textContent = 'Saved'; // Change button text to 'Saved'
+                }, 1000);
+            });
+    }
+    
+    function showAlert(message, isSuccess = false) {
+        const alertBox = document.getElementById('alert-box');
+        alertBox.textContent = message;
+    
+        if (isSuccess) {
+            alertBox.style.backgroundColor = "#d4edda";
+            alertBox.style.color = "#155724";
+            alertBox.style.border = "1px solid #c3e6cb";
+        } else {
+            alertBox.style.backgroundColor = "#f8d7da";
+            alertBox.style.color = "#721c24";
+            alertBox.style.border = "1px solid #f5c6cb";
+        }
+    
+        alertBox.style.display = "block";
+        setTimeout(() => alertBox.style.display = "none", 5000);
+    }
+</script>
+</body>
+</html>

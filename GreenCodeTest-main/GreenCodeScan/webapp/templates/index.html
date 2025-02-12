@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green CodeRefiner Configuration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-content container">
+            <div class="logo-container">
+                <i class="fas fa-leaf logo-icon"></i>
+                <div class="header-titles">
+                    <h1 class="green">Green</h1>
+                    <h1 class="coderefiner">CodeRefiner<sup>TM</sup></h1>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#info">About</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="main">Transform code, track, and minimize carbon emissions</h1>
+                    <h3 class="main">Green CodeRefiner<sup>TM</sup> helps developers create energy-efficient codebases using Azure OpenAI's GPT-4o model</h3>
+                    <div class="button-container">
+                        <a href="/configure" class="start-button">
+                            Start Free Trial
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="image-gradient"></div>
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80" alt="Team collaboration">
+                </div>
+            </div>
+        </section>
+
+        <section id="info" class="info-section">
+            <div class="container">
+                <h2>What is Green CodeRefiner?</h2>
+                <p class="info-description">
+                    An innovative Azure-based utility designed to optimize your codebase for energy efficiency while tracking emissions in real-time.
+                </p>
+                <div class="info-grid">
+                    <div class="benefit-card">
+                        <i class="fas fa-leaf"></i>
+                        <h4>Green IT Adoption</h4>
+                        <p>Strengthened adoption of Green IT practices</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-code-branch"></i>
+                        <h4>Seamless Integration</h4>
+                        <p>Seamless integration with existing GitHub and DevOps workflows</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-bolt"></i>
+                        <h4>Energy Efficiency</h4>
+                        <p>Improved energy efficiency of application source code</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-chart-bar"></i>
+                        <h4>Impact Score</h4>
+                        <p>20 - 40% Improved green impact score ↑</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Emissions Reduction</h4>
+                        <p>Reduced Scope 2 GHG emissions ↓</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pricing" class="pricing-section">
+            <div class="container">
+                <h2>Pricing Plans</h2>
+                <p class="pricing-subtitle">From researchers to large companies, we have plans for everyone</p>
+                
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Trial Plan</h3>
+                            <div class="price">Free</div>
+                        </div>
+                        <div class="pricing-features">
+                            <ul>
+                                <li><i class="fas fa-check"></i>Code Optimization: Refine 2-4 files</li>
+                                <li><i class="fas fa-check"></i>Basic emissions monitoring</li>
+                                <li><i class="fas fa-check"></i>Before/after code refinement tracking</li>
+                                <li><i class="fas fa-check"></i>Limited emissions report</li>
+                                <li class="not-included"><i class="fas fa-times"></i>Unit Test Generation</li>
+                            </ul>
+                        </div>
+                        <div class="pricing-footer">
+                            <a href="/configure" class="pricing-button">Start Free Trial</a>
+                        </div>
+                    </div>
+
+                    <div class="pricing-card featured">
+                        <div class="popular-tag">Most Popular</div>
+                        <div class="pricing-header">
+                            <h3>Pro Plan</h3>
+                            <div class="price">Contact Us</div>
+                        </div>
+                        <div class="pricing-features">
+                            <ul>
+                                <li><i class="fas fa-check"></i>Unlimited file optimization</li>
+                                <li><i class="fas fa-check"></i>Support for 20+ languages</li>
+                                <li><i class="fas fa-check"></i>Comprehensive emissions tracking</li>
+                                <li><i class="fas fa-check"></i>Full unit test generation</li>
+                                <li><i class="fas fa-check"></i>Advanced dynamic reports</li>
+                                <li><i class="fas fa-check"></i>Priority email support</li>
+                            </ul>
+                        </div>
+                        <div class="pricing-footer">
+                            <a href="#" class="pricing-button featured">Contact Sales</a>
+                        </div>
+                    </div>
+
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Enterprise</h3>
+                            <div class="price">Custom</div>
+                        </div>
+                        <div class="pricing-features">
+                            <ul>
+                                <li><i class="fas fa-check"></i>All Pro Plan features</li>
+                                <li><i class="fas fa-check"></i>Custom deployment options</li>
+                                <li><i class="fas fa-check"></i>CI/CD pipeline integration</li>
+                                <li><i class="fas fa-check"></i>Dedicated consulting</li>
+                                <li><i class="fas fa-check"></i>Technical team support</li>
+                            </ul>
+                        </div>
+                        <div class="pricing-footer">
+                            <a href="#" class="pricing-button">Contact Sales</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Tech Mahindra. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

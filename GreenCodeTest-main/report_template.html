@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Code Emissions Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #d1fae5;
+            --secondary: #3b82f6;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --background: #f3f4f6;
+            --overview-background: #f9fafb;
+            --card-bg: #ffffff;
+            --success: #22c55e;
+            --danger: #ef4444;
+            
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            /* --shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0px 8px rgba(0, 0, 0, 0.06); */
+
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-lg: 0.75rem;
+            
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 0.75rem;
+            --spacing: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            
+            --container-width: 1600px;
+            --grid-gap: 1.5rem;
+        }
+        /* Header */
+        :root {
+        --primary-color: #10b981;
+        --primary-dark: #059669;
+        --secondary-color: #0ea5e9;
+        --text-color: #1f2937;
+        --text-light: #4b5563;
+        --background-color: #f9fafb;
+        --white: #ffffff;
+        --shadow-lg-header: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        --transition-header: all 0.3s ease;
+        }
+        /* Base Styles */
+
+        html {
+        scroll-behavior: smooth;
+        }
+
+        body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        background: linear-gradient(to bottom, var(--background-color), var(--white));
+        color: var(--text-color);
+        line-height: 1.6;
+        overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.2;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--primary-dark);
+        }
+        /* Improvement card styling */
+        .improvement-card {
+            grid-column: span 3;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: var(--spacing);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .improvement-label {
+            font-size: var(--text-base);
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .improvement-value {
+            font-size: var(--text-xl);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .improvement-value.positive {
+            color: var(--success);
+        }
+
+        .improvement-value.negative {
+            color: var(--danger);
+        }
+
+        .improvement-value i {
+            font-size: var(--text-lg);
+        }
+        /* Info Button */
+        .info-icon {
+            position: relative;
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: var(--text-light);
+            color: var(--card-bg);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: var(--text-xs);
+            cursor: pointer;
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            line-height: 15px;
+            text-align: center;
+            background-color: #2ecc71;
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--text);
+            color: var(--card-bg);
+            text-align: center;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-xs);
+            position: absolute;
+            z-index: 999;
+            top: 100%;
+            left: 100%;
+            margin-top: 8px;
+            margin-left: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: var(--text-xs);
+            font-weight: normal;
+            box-shadow: var(--shadow);
+        }
+
+        .tooltip-text-left {
+            visibility: hidden;
+            width: 120px;
+            height: 120px;
+            background-color: var(--text);
+            color: var(--card-bg);
+            text-align: center;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-xs);
+            position: absolute;
+            z-index: 999;
+            top: 100%;
+            left: 0;
+            margin-top: 8px;
+            margin-left: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: var(--text-xs);
+            font-weight: normal;
+            box-shadow: var(--shadow);
+            transform: translateX(-90%);
+        }
+
+        .info-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .info-icon:hover .tooltip-text-left {
+            visibility: visible;
+            opacity: 1;
+        }        
+
+        /* Component Styles */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .logo {
+            height: 50px;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-link {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: var(--spacing);
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-titles h1 {
+                font-size: var(--text-lg);
+            }
+
+            .logo {
+                height: 40px;
+            }
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* New styles for metric-card-two */
+        .metric-card-two {
+            height: 200px; /* Set a fixed height - adjust as needed */
+            display: flex;
+            flex-direction: column;
+            pointer-events: none; /* Disable hover on the container */
+        }
+
+        /* Top half container */
+        .metric-card-two .top-half {
+            height: 60%;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            padding: var(--spacing);
+            pointer-events: auto; /* Re-enable hover only for top half */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent content overflow */
+        }
+
+        /* Bottom half container */
+        .metric-card-two .bottom-half {
+            height: 50%;
+            /* No styling needed - completely empty */
+        }
+
+        /* Content styling */
+        .metric-card-two .metric-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        /* Hover effect */
+        .metric-card-two .top-half:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .metric-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: rgba(46, 204, 113, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: var(--text-lg);
+        }
+
+        .metric-header h3 {
+            font-size: var(--text-lg);
+            margin: 0;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: var(--text-xl);
+            font-weight: 500;
+            color: var(--text);
+            margin: var(--spacing-xs) 0;
+        }
+
+        .metric-meta {
+            font-size: var(--text-sm);
+            color: var(--text-light);
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            box-shadow: var(--shadow);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .section-header {
+            margin-bottom: var(--spacing);
+        }
+
+        .section-header h2 {
+            font-size: var(--text-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .section-header h2 i {
+            color: var(--primary);
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: var(--container-width);
+            margin: 5rem auto var(--spacing-xl);
+            padding: 0 2rem;
+            overflow-x: hidden;
+            margin-top: 7%;    
+        }
+
+        .dashboard-grid {
+            grid-template-areas: 
+                "server server"
+                "code-overview code-overview"
+                "energy emissions"
+                "code code";
+            max-width: var(--container-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            width: 100%;
+            gap: var(--grid-gap);
+        }
+
+        /* Specific section layouts */
+        .dashboard-section[data-area="server"] { 
+            grid-area: server;
+        }
+
+        .dashboard-section[data-area="energy"] { 
+            grid-area: energy;
+            margin-right: 1rem; /* Add space between energy and emissions sections */
+        }
+
+        .dashboard-section[data-area="emissions"] { 
+            grid-area: emissions;
+            margin-left: 1rem; /* Add space between energy and emissions sections */
+        }
+
+        .dashboard-section[data-area="code"] { 
+            grid-area: code;
+        }
+
+        .dashboard-section[data-area="code-overview"] { 
+            grid-area: code-overview;
+        }
+
+        .dashboard-section {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-lg);
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            /* grid-template-columns: 1fr 1fr 1fr; */
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing);
+            margin-bottom: var(--spacing);
+            width: 100%;
+            position: relative;
+        }
+        /* Animation Styles */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Overview section */
+
+        .overview-tabs {
+            display: flex;
+            background-color: var(--overview-background);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .overview-tab {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .overview-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .overview-content {
+            display: none;
+        }
+
+        .overview-content.active {
+            display: block;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing);
+        }
+
+        .overview-item {
+            background-color: var(--overview-background);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            text-align: center;
+        }
+
+        .overview-item-label {
+            font-size: var(--text-sm);
+            color: var(--text-light);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .overview-item-value {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .file-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-sm);
+        }
+
+        .file-type {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            font-size: var(--text-xs);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .dashboard {
+                padding: 0 var(--spacing);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas: 
+                    "server"
+                    "energy"
+                    "emissions"
+                    "code";
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: var(--spacing);
+                text-align: center;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --spacing-lg: 1.5rem;
+                --spacing: 1rem;
+            }
+            
+            .metric-value {
+                font-size: 1.5rem;
+            }
+        }
+        .charts-row {
+            display: flex;
+            gap: var(--spacing); /* Adjust spacing between charts */
+        }
+
+        .charts-row .chart-container {
+            flex: 1; /* Ensure equal width for both charts */
+            min-width: 0; /* Prevent overflow */
+        }
+        /* Server Analysis Grid Layout */
+        .server-analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px 450px;
+            gap: 1rem;
+            width: 100%;
+            max-width: 100%;
+        }
+        /* Ensure all cards stay within bounds */
+        .middle-column,
+        .server-metrics-card {
+            width: 100%;
+            min-width: 0; /* Allow shrinking below content size */
+            overflow: hidden;
+        }
+
+        /* Left Card - Graph */
+        .server-graph-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            box-shadow: var(--shadow);
+            min-height: 800px; /* Increased from 600px */
+            min-width: 0;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg); /* Increased gap between graphs */
+        }
+            /* Style for the middle column container */
+        .middle-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing);
+            width: 400px;
+        }
+
+        /* Right Card - Metrics */
+        .server-metrics-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            box-shadow: var(--shadow);
+            height: 600px; /* Fixed height to match other cards */
+            width: 450px;
+        }
+
+            /* Individual graph container styles */
+        .graph-container {
+            flex: 1;
+            min-height: 350px; /* Increased minimum height for each graph */
+            width: 100%;
+            position: relative;
+            padding: var(--spacing) 0; /* Added vertical padding */
+        }
+
+        /* Ensure graphs maintain aspect ratio and fill container */
+        .graph-container > div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Add divider between graphs */
+        .graph-container:not(:last-child) {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: var(--spacing-lg); /* Extra padding at bottom */
+        }
+            /* Second graph container specific styling */
+        .graph-container:last-child {
+            min-height: 400px; /* Extra height for the second graph */
+            padding-bottom: var(--spacing-lg); /* Extra padding at bottom */
+        }
+
+        /* 2x2 Grid for Metrics */
+        .metrics-grid-2x2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--spacing);
+            height: 100%;
+            width: 100%;
+        }
+
+        .metric-box:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Metric Box Header */
+        .metric-box-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .metric-box-header h4 {
+            margin: 0;
+            font-size: var(--text-lg);
+            color: var(--text);
+        }
+
+        /* Metric Box Icon */
+        .metric-box-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(46, 204, 113, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        /* Update responsive breakpoints */
+        @media (max-width: 1600px) {
+            .server-analysis-grid {
+                grid-template-columns: minmax(0, 1fr) 340px 360px;
+            }
+            
+            .middle-column,
+            .server-metrics-card {
+                width: 340px;
+            }
+        }
+
+        @media (max-width: 1400px) {
+            .server-analysis-grid {
+                grid-template-columns: minmax(0, 1fr) 320px 340px;
+            }
+            
+            .middle-column,
+            .server-metrics-card {
+                width: 320px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .server-analysis-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .middle-column,
+            .server-metrics-card {
+                width: 100%;
+            }
+            
+            .server-metrics-card {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .server-analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .server-graph-card {
+                width: 100%;
+            }
+            
+            .middle-column {
+                grid-column: 1 / -1;
+            }
+        }
+        /* Responsive adjustments */
+        @media (max-width: 1600px) {
+            .dashboard {
+                max-width: 95%;
+                padding: 0 1.5rem;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas: 
+                    "server"
+                    "energy"
+                    "emissions"
+                    "code";
+            }
+
+            .dashboard-section[data-area="energy"],
+            .dashboard-section[data-area="emissions"] {
+                margin: 0; /* Remove horizontal margins on smaller screens */
+            }
+        }
+        /* Add new styles for sparklines */
+        .sparkline-container {
+            height: 30px;
+            margin: 10px 0;
+        }
+        
+        .sparkline {
+            width: 100%; /* Maintain full width */
+            height: 100%; /* Maintain full height */
+            display: inline-block; /* Ensure it behaves like a block element */
+            margin-left: auto; /* Align to the right */
+        }
+        
+        /* Update metric box to accommodate sparkline */
+        .metric-box {
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacing-sm);  /* Reduced padding */
+            background: var(--background);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            min-height: 110px;  /* Added minimum height */
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+        }
+        
+        .metric-box-value {
+            margin-top: auto;
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--text);
+            padding: var(--spacing-sm);
+        }
+        /* Header row styles */
+        .servers-list-header {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--spacing-sm);
+            background-color: var(--background);
+            border-bottom: 2px solid var(--primary);
+            font-weight: 600;
+            color: var(--text);
+            margin-top: var(--spacing-xs);
+        }
+
+        .header-cell {
+            font-size: var(--text-sm);
+        }
+
+        /* Adjust the header cells to align with content */
+        .header-cell:first-child {
+            flex: 1;
+            padding-left: 28px; /* Account for the server icon spacing */
+        }
+
+        .header-cell:last-child {
+            text-align: right;
+            min-width: 160px; /* Ensure enough space for the emission values */
+        }
+        /* Critical Servers Card Styles */
+        .critical-servers-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            box-shadow: var(--shadow);
+            height: 480px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 0;
+        }
+
+        .critical-servers-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .critical-servers-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .critical-servers-header h3 {
+            margin: 0;
+            font-size: var(--text-base);
+            color: var(--text);
+        }
+
+        .critical-servers-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 0;
+            max-height: calc(450px - 60px);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .critical-servers-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .critical-servers-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .critical-servers-list::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+        /* Style the total servers card */
+        .total-servers-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            box-shadow: var(--shadow);
+            height: 100px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing);
+        }
+
+        .total-servers-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .total-servers-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .total-servers-header h3 {
+            margin: 0;
+            font-size: var(--text-base);
+            color: var(--text);
+        }
+
+        .total-servers-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-left: auto;
+            padding-right: var(--spacing);
+        }
+
+        /* Ensure server items have consistent height */
+        .server-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            height: 48px; /* Fixed height for each item */
+        }
+
+        .server-item:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .server-name {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--text-sm);
+            color: var(--text);
+        }
+
+        .server-name i {
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .server-emission {
+            min-width: 160px;
+            text-align: right;
+            font-weight: 600;
+            color: #e74c3c;
+            font-size: var(--text-sm);
+        }
+
+        .server-emission .unit {
+            font-size: var(--text-xs);
+            color: var(--text-light);
+            margin-left: 2px;
+        }
+
+        .no-servers {
+            text-align: center;
+            color: var(--text-light);
+            padding: var(--spacing);
+        }
+
+        .metric-box-value .measure {
+            font-size: var(--text-xs);
+            color: var(--text-light);
+            margin-left: 2px;
+        }
+            /* Add new styles for last run cards container */
+        .last-run-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        /* Last run card styles */
+        .last-run-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: var(--spacing);
+            box-shadow: var(--shadow);
+            height: 100px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing);
+        }
+
+        .last-run-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .last-run-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .last-run-header h3 {
+            margin: 0;
+            font-size: var(--text-base);
+            color: var(--text);
+        }
+
+        .last-run-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-left: auto;
+            padding-right: var(--spacing);
+        }
+
+        .last-run-value .unit {
+            font-size: var(--text-sm);
+            color: var(--text-light);
+            margin-left: 4px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .server-analysis-grid {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            }
+            
+            .server-metrics-card {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .server-analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .server-metrics-card {
+                grid-column: auto;
+            }
+            
+            .middle-column {
+                gap: var(--spacing);
+            }
+            
+            .critical-servers-card,
+            .server-metrics-card {
+                height: auto;
+                min-height: 300px;
+            }
+            .server-graph-card {
+                min-height: 1000px; /* Increase height on smaller screens */
+            }
+            
+            .graph-container {
+                min-height: 400px; /* Minimum height for each graph on mobile */
+            }
+            .graph-container:last-child {
+                min-height: 450px;
+            }
+            
+            .critical-servers-list {
+                max-height: 240px; /* Fixed height for scrolling on mobile */
+            }
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header-cell {
+                font-size: var(--text-xs);
+            }
+            
+            .header-cell:last-child {
+                min-width: 120px;
+            }
+            
+            .server-emission {
+                min-width: 120px;
+            }
+            .last-run-container {
+                grid-template-columns: 1fr;
+            }
+        }
+            /* Additional responsive adjustments for very small screens */
+        @media (max-width: 576px) {
+            .server-graph-card {
+                min-height: 1200px;
+            }
+            
+            .graph-container {
+                min-height: 500px;
+            }
+            
+            .graph-container:last-child {
+                min-height: 550px;
+            }
+        }
+
+        /* Header Styles */
+        header {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+        padding: 15px;
+        }
+
+        .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 4rem;
+        }
+
+        .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        }
+
+        .logo-icon {
+        font-size: 2rem;
+        color: var(--primary-color);
+        }
+
+        .header-titles {
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+        }
+        .title-row {
+            display: flex;
+            gap: 0.25rem; /* Space between Green and CodeRefiner */
+            align-items: baseline; /* Align Green and CodeRefiner text properly */
+        }
+
+        .green {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+        font-weight: 700;
+        }
+
+        .coderefiner {
+        color: var(--text-color);
+        font-size: 1.25rem;
+        font-weight: 700;
+        }
+
+        nav ul {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+        }
+
+        nav a {
+        color: var(--text-light);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition-header);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        }
+
+        nav a:hover {
+        color: var(--primary-color);
+        }
+        nav a i {
+        font-size: inherit;
+        transition: transform 0.3s ease;
+        }
+
+        nav a:hover i {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content container">
+            <div class="logo-container">
+                <!-- <img src="https://www.techmahindra.com/themes/custom/techm/techm_logo.svg" alt="Tech Mahindra Logo" class="logo"> -->
+                <i class="fas fa-leaf logo-icon"></i>
+                <div class="header-titles">
+                    <div class="title-row">
+                        <h1 class="green">Green</h1>
+                        <h1 class="coderefiner">CodeRefiner<sup>TM</sup></h1>
+                    </div>
+                    <p style="margin-top: -0.25rem; margin-bottom: 0; font-weight: normal; font-size: 1.25rem; color: var(--text-light);">Emissions Report for Airbus</p>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li>
+                        <a href="details_report.html">
+                            <i class="fas fa-file-alt fa-bounce"></i>
+                            View Detailed Report
+                        </a>
+                    </li>
+                    <li>
+                        <a href="server_report.html">
+                            <i class="fas fa-server fa-bounce"></i>
+                            View Detailed Server
+                        </a>
+                    </li>
+                    <li>
+                        <a href="recommendations_report.html">
+                            <i class="fas fa-lightbulb fa-bounce"></i>
+                            Recommendations & Overview
+                        </a>
+                    </li>
+                    <li>Last Run: {{ last_run_timestamp }}</li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <div class="dashboard-grid">
+            <!-- Server Analysis Section -->
+            <section class="dashboard-section" data-area="server">
+                <div class="section-header">
+                    <h2><i class="fas fa-server"></i> Server Analysis</h2>
+                </div>
+                    <!-- Add last run cards container -->
+                <div class="last-run-container">
+                    <!-- Total Last Run CO2 Card -->
+                    <div class="last-run-card">
+                        <div class="last-run-header">
+                            <div class="last-run-icon">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <h3>Total of last run CO₂ Emissions</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text">This displayed value is defining the last run total generated CO₂ Emissions.</span>
+                            </div>
+                        </div>
+                        <div class="last-run-value">
+                            {{ total_last_run_co2 | safe}}
+                            <span class="unit">MT</span>
+                            <div class="metric-meta">Last run timestamp: {{formatted_timestamp | safe}}</div>
+                        </div>
+                    </div>
+                    <!-- Total Last Run Power Card -->
+                    <div class="last-run-card">
+                        <div class="last-run-header">
+                            <div class="last-run-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h3>Total Last Run Energy Consumption</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text">Total energy consumed during the last analysis run, measured in kilowatt-hours (kWh).</span>
+                            </div>
+                        </div>
+                        <div class="last-run-value">
+                            {{ total_last_run_power | safe}}
+                            <span class="unit">kWh</span>
+                            <div class="metric-meta">Last run timestamp: {{formatted_timestamp | safe}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="server-analysis-grid">
+                    <!-- Left card for graph -->
+                    <div class="server-graph-card">
+                        <div class="graph-header">
+                            <h3>Server Distribution</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text">Visual representation of server distribution by operating system type and version.</span>
+                            </div>
+                        </div>
+                        <div class="graph-container">
+                            {{ server_os_type_fig | safe }}
+                        </div>
+                        <div class="graph-container">
+                            {{ server_os_version_fig | safe }}
+                        </div>
+                    </div>
+                        <!-- Middle column with stacked cards -->
+                    <div class="middle-column">
+                        <!-- Critical servers card -->
+                        <div class="critical-servers-card">
+                            <div class="critical-servers-header">
+                                <div class="critical-servers-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h3>Critical Servers</h3>
+                            </div>
+                            <div class="servers-list-header">
+                                <div class="header-cell">Hostname</div>
+                                <div class="header-cell">CO₂ Emission (Metric Tons)</div>
+                            </div>
+                            <div class="critical-servers-list">
+                                {% if critical_servers %}
+                                    {% for server in critical_servers %}
+                                    <div class="server-item">
+                                        <div class="server-name">
+                                            <i class="fas fa-server"></i>
+                                            {{ server['hostname'] }}
+                                        </div>
+                                        <div class="server-emission">
+                                            {{ "%.6f"|format(server['total_co2']) }}
+                                            <span class="unit">MT</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="no-servers">
+                                        No critical servers found
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Total servers card -->
+                        <div class="total-servers-card">
+                            <div class="total-servers-header">
+                                <div class="total-servers-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h3>Total Critical Servers</h3>
+                                <div class="info-icon">
+                                    i
+                                    <span class="tooltip-text">Total number of servers identified as critical based on their emissions and performance metrics.</span>
+                                </div>
+                            </div>
+                            <div class="total-servers-value">{{ critical_server_count | safe }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right card for metrics -->
+                    <div class="server-metrics-card">
+                        <div class="metrics-grid-2x2">
+                            <!-- CPU Usage -->
+                            <div class="metric-box">
+                                <div class="metric-box-header">
+                                    <div class="metric-box-icon">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                    <h4>CPU Usage</h4>
+                                    <div class="info-icon">
+                                        i
+                                        <span class="tooltip-text-left">Average CPU utilization across all monitored servers.</span>
+                                    </div>
+                                </div>
+                                <div class="sparkline-container">
+                                    <svg class="sparkline" viewBox="0 0 100 30">
+                                        {% set cpu_points = [] %}
+                                        {% for value in cpu_usage_data[-10:] %}
+                                            {% set x = (loop.index0 / 9) * 100 %}
+                                            {% set y = 30 - (value / 100 * 25) %}
+                                            {% set _ = cpu_points.append("%d %d"|format(x, y)) %}
+                                        {% endfor %}
+                                        <path d="M {{ cpu_points|join(' L ') }}" 
+                                            fill="none" 
+                                            stroke="#FF6B6B" 
+                                            stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <div class="metric-box-value">
+                                    {{ average_cpu_usage }}% <span class="measure">AVG</span>
+                                </div> 
+                            </div>
+                            
+                            <!-- RAM Usage -->
+                            <div class="metric-box">
+                                <div class="metric-box-header">
+                                    <div class="metric-box-icon">
+                                        <i class="fas fa-memory"></i>
+                                    </div>
+                                    <h4>RAM Usage</h4>
+                                    <div class="info-icon">
+                                        i
+                                        <span class="tooltip-text-left">Average memory utilization across all monitored servers.</span>
+                                    </div>
+                                </div>
+                                <div class="sparkline-container">
+                                    <svg class="sparkline" viewBox="0 0 100 30">
+                                        {% set ram_points = [] %}
+                                        {% for value in ram_usage_data[-10:] %}
+                                            {% set x = (loop.index0 / 9) * 100 %}
+                                            {% set y = 30 - (value / 100 * 25) %}
+                                            {% set _ = ram_points.append("%d %d"|format(x, y)) %}
+                                        {% endfor %}
+                                        <path d="M {{ ram_points|join(' L ') }}" 
+                                            fill="none" 
+                                            stroke="#4ECDC4" 
+                                            stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <div class="metric-box-value">
+                                    {{ average_ram_usage }}% <span class="measure">AVG</span>
+                                </div> 
+                            </div>
+                            
+                            <!-- Disk Usage -->
+                            <div class="metric-box">
+                                <div class="metric-box-header">
+                                    <div class="metric-box-icon">
+                                        <i class="fas fa-hdd"></i>
+                                    </div>
+                                    <h4>Disk Usage</h4>
+                                    <div class="info-icon">
+                                        i
+                                        <span class="tooltip-text-left">Average Disk utilization across all monitored servers.</span>
+                                    </div>
+                                </div>
+                                <div class="sparkline-container">
+                                    <svg class="sparkline" viewBox="0 0 100 30">
+                                        {% set disk_points = [] %}
+                                        {% for value in disk_usage_data[-10:] %}
+                                            {% set x = (loop.index0 / 9) * 100 %}
+                                            {% set y = 30 - (value / 100 * 25) %}
+                                            {% set _ = disk_points.append("%d %d"|format(x, y)) %}
+                                        {% endfor %}
+                                        <path d="M {{ disk_points|join(' L ') }}" 
+                                            fill="none" 
+                                            stroke="#FFB100" 
+                                            stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <div class="metric-box-value">
+                                    {{ average_disk_usage }}% <span class="measure">AVG</span>
+                                </div> 
+                            </div>
+                            
+                            <!-- Network Usage -->
+                            <div class="metric-box">
+                                <div class="metric-box-header">
+                                    <div class="metric-box-icon">
+                                        <i class="fas fa-network-wired"></i>
+                                    </div>
+                                    <h4>Network Usage</h4>
+                                    <div class="info-icon">
+                                        i
+                                        <span class="tooltip-text-left">Average Network utilization across all monitored servers.</span>
+                                    </div>
+                                </div>
+                                <div class="sparkline-container">
+                                    <svg class="sparkline" viewBox="0 0 100 30">
+                                        {% set network_points = [] %}
+                                        {% for value in network_usage_data[-10:] %}
+                                            {% set x = (loop.index0 / 9) * 100 %}
+                                            {% if max_network > 0 %}
+                                                {% set y = 30 - (value / max_network * 25) %}
+                                            {% else %}
+                                                {% set y = 30 %}
+                                            {% endif %}
+                                            {% set _ = network_points.append("%d %d"|format(x, y)) %}
+                                        {% endfor %}
+                                        <path d="M {{ network_points|join(' L ') }}" 
+                                              fill="none" 
+                                              stroke="#845EC2" 
+                                              stroke-width="2"/>
+                                    </svg>
+                                </div>                                
+                                <div class="metric-box-value">
+                                    {{ average_network_usage }} bytes
+                                </div> 
+                            </div>
+
+                            <!-- Disk Read -->
+                            <div class="metric-box">
+                                <div class="metric-box-header">
+                                    <div class="metric-box-icon">
+                                        <i class="fas fa-arrow-circle-down"></i>
+                                    </div>
+                                    <h4>Disk Read</h4>
+                                    <div class="info-icon">
+                                        i
+                                        <span class="tooltip-text-left">Average retrieving data across all monitored servers.</span>
+                                    </div>
+                                </div>
+                                <div class="sparkline-container">
+                                    <svg class="sparkline" viewBox="0 0 100 30">
+                                        {% set read_points = [] %}
+                                        {% for value in disk_read_data[-10:] %}
+                                            {% set x = (loop.index0 / 9) * 100 %}
+                                            {% set y = 30 - (value / 100 * 25) %}
+                                            {% set _ = read_points.append("%d %d"|format(x, y)) %}
+                                        {% endfor %}
+                                        <path d="M {{ read_points|join(' L ') }}" fill="none" stroke="#17A589" stroke-width="2"/>
+                                    </svg>
+                                </div>                                
+                                <div class="metric-box-value">
+                                    {{ average_disk_read }} MB/s
+                                </div> 
+                            </div>
+
+                            <!-- Disk Write -->
+                            <div class="metric-box">
+                                <div class="metric-box-header">
+                                    <div class="metric-box-icon">
+                                        <i class="fas fa-arrow-circle-up"></i>
+                                    </div>
+                                    <h4>Disk Write</h4>
+                                    <div class="info-icon">
+                                        i
+                                        <span class="tooltip-text-left">Average storing data across all monitored servers.</span>
+                                    </div>                                    
+                                </div>
+                                <div class="sparkline-container">
+                                    <svg class="sparkline" viewBox="0 0 100 30">
+                                        {% set write_points = [] %}
+                                        {% for value in disk_write_data[-10:] %}
+                                            {% set x = (loop.index0 / 9) * 100 %}
+                                            {% set y = 30 - (value / 100 * 25) %}
+                                            {% set _ = write_points.append("%d %d"|format(x, y)) %}
+                                        {% endfor %}
+                                        <path d="M {{ write_points|join(' L ') }}" fill="none" stroke="#F39C12" stroke-width="2"/>
+                                    </svg>
+                                </div>                                
+                                <div class="metric-box-value">
+                                    {{ average_disk_write }} MB/s
+                                </div> 
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Energy Consumption Section -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bolt"></i> Energy Consumption</h2>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <h3>Testcase Server</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text-left">Number of servers used for running test cases and their average energy consumption.</span>
+                            </div> 
+                        </div>
+                        <div class="metric-value">{{ unique_hosts }}</div>
+                        <div class="metric-meta">Average Energy: {{ average_energy_consumption }} KWH</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3>Before Refinement</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text-left">Energy consumption measured before code optimization and refinement.</span>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ total_before }} <span class="unit">Wh</span></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+                            <h3>After Refinement</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text-left">Energy consumption measured after implementing code optimizations and refinements.</span>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ total_after }} <span class="unit">Wh</span></div>
+                    </div>
+                    <div class="improvement-card">
+                        <div class="improvement-label">
+                            Overall Energy Efficiency
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text">Testcases are generated & run on the testcase server. Results energy efficiency calculated.</span>
+                            </div>
+                        </div>
+                        {% set threshold = 1e-6 %}
+                        {% if total_before|float > threshold %}
+                            {% set energy_improvement = ((total_before|float - total_after|float) / total_before|float * 100) | round(2) %}
+                        {% else %}
+                            {% set energy_improvement = 0 %}
+                        {% endif %}
+                        <div class="improvement-value {{ 'positive' if energy_improvement > 0 else 'negative' }}">
+                            {{ energy_improvement }}%
+                            <i class="fas {{ 'fa-arrow-up' if energy_improvement > 0 else 'fa-arrow-down' }}"></i>
+                        </div>
+                    </div>                    
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Energy Consumption Trends</h3>
+                        <div class="info-icon">
+                            i
+                            <span class="tooltip-text">Comparative analysis of energy consumption before and after code refinement over time.</span>
+                        </div>
+                    </div>
+                    {{ div_combined_graph | safe }}
+                </div>
+            </section>
+
+            <!-- Code Analysis Overview Section -->
+            <section class="dashboard-section" data-area="code-overview">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-line"></i> 
+                        Code Analysis Overview
+                    </h2>
+                </div>
+                <div class="overview-tabs">
+                    <div class="overview-tab active" data-tab="fresh">Fresh Details (Last Run)</div>
+                    <div class="overview-tab" data-tab="historical">Historical Overview (Overall)</div>
+                </div>
+                <div class="overview-content active" data-content="fresh">
+                    <div class="overview-grid">
+                        <div class="overview-item">
+                            <div class="overview-item-label">Total Files Modified</div>
+                            <div class="overview-item-value">{{ final_overview_data.fresh_details.total_files_modified_last_run }}</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-item-label">Total LOC Converted</div>
+                            <div class="overview-item-value">{{ final_overview_data.fresh_details.total_loc_converted_last_run }}</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-item-label">Total Time (minutes)</div>
+                            <div class="overview-item-value">{{ final_overview_data.fresh_details.total_time_minutes_last_run }}</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-item-label">File Types</div>
+                            <div class="file-types">
+                                {% if final_overview_data.fresh_details.file_types_last_run %}
+                                    {% for file_type, count in final_overview_data.fresh_details.file_types_last_run.items() %}
+                                    <span class="file-type">{{ file_type }}: {{ count }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overview-content" data-content="historical">
+                    <div class="overview-grid">
+                        <div class="overview-item">
+                            <div class="overview-item-label">Total Files Modified</div>
+                            <div class="overview-item-value">{{ final_overview_data.historical_overview.total_files_modified }}</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-item-label">Total LOC Converted</div>
+                            <div class="overview-item-value">{{ final_overview_data.historical_overview.total_loc_converted }}</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-item-label">Total Time (minutes)</div>
+                            <div class="overview-item-value">{{ final_overview_data.historical_overview.total_time_minutes }}</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-item-label">File Types</div>
+                            <div class="file-types">
+                                {% if final_overview_data.historical_overview.file_types %}
+                                    {% for file_type, count in final_overview_data.historical_overview.file_types.items() %}
+                                    <span class="file-type">{{ file_type }}: {{ count }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Emissions Analysis Section -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cloud"></i> Emissions Analysis</h2>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <h3>Testcase Server</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text-left">Number of servers and their average CO₂ emissions during test case execution.</span>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ unique_hosts }}</div>
+                        <div class="metric-meta">Average CO₂: {{ average_co2_emission }} Metric Tons</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3>Before Refinement</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text-left">CO₂ emissions measured before implementing code optimizations.</span>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ total_emissions_before }} <span class="unit">gCO2eq</span></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+                            <h3>After Refinement</h3>
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text-left">CO₂ emissions measured after implementing code optimizations and improvements.</span>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ total_emissions_after }} <span class="unit">gCO2eq</span></div>
+                    </div>
+                    <div class="improvement-card">
+                        <div class="improvement-label">
+                            Overall Emissions Reduction
+                            <div class="info-icon">
+                                i
+                                <span class="tooltip-text">Testcases are generated & run on the testcase server. Results emissions calculated.</span>
+                            </div>
+                        </div>
+                        {% set emissions_improvement = 0 %}
+                        {% if total_emissions_before|float > 0 %}
+                            {% set emissions_improvement = ((total_emissions_before|float - total_emissions_after|float) / total_emissions_before|float * 100) | round(2) %}
+                        {% endif %}
+                        <div class="improvement-value {{ 'positive' if emissions_improvement > 0 else 'negative' if emissions_improvement < 0 else 'neutral' }}">
+                            {{ emissions_improvement }}%
+                            {% if emissions_improvement > 0 %}
+                                <i class="fas fa-arrow-up"></i>
+                            {% elif emissions_improvement < 0 %}
+                                <i class="fas fa-arrow-down"></i>
+                            {% else %}
+                                <i class="fas fa-minus"></i>
+                            {% endif %}
+                        </div>
+                    </div>                 
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Emissions Trends</h3>
+                        <div class="info-icon">
+                            i
+                            <span class="tooltip-text">Comparative analysis of CO₂ emissions before and after code refinement over time.</span>
+                        </div>
+                    </div>
+                    {{ div_emissions_combined_graph | safe }}
+                </div>
+            </section>
+
+            <!-- Code Analysis Section -->
+            <section class="dashboard-section" data-area="code">
+                <div class="section-header">
+                    <h2><i class="fas fa-code"></i> Code Analysis</h2>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="info-icon">
+                            i
+                            <span class="tooltip-text">Embedded code refers to files or scripts that are typically used inside other software, webpages, or environments to define structure, style, or behavior.</span>
+                        </div>
+                        {{ div_pie_chart_embedded | safe }}
+                    </div>
+                    <div class="chart-container">
+                        <div class="info-icon">
+                            i
+                            <span class="tooltip-text">Non-embedded code refers to standalone programming files that run independently to create applications, perform tasks, or process data.</span>
+                        </div>
+                        {{ div_pie_chart_non_embedded | safe }}
+                    </div>
+                </div>
+            </section>   
+        </div>
+    </main>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+                    const tabs = document.querySelectorAll('.overview-tab');
+                    const contents = document.querySelectorAll('.overview-content');
+
+                    tabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            const tabName = tab.getAttribute('data-tab');
+                            
+                            tabs.forEach(t => t.classList.remove('active'));
+                            contents.forEach(c => c.classList.remove('active'));
+
+                            tab.classList.add('active');
+                            document.querySelector(`.overview-content[data-content="${tabName}"]`).classList.add('active');
+                        });
+                    });
+                });
+        // Dashboard functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Enhanced graph resizing function with smaller margins
+            function resizeGraphs() {
+                const graphs = document.querySelectorAll('.chart-container');
+                graphs.forEach(graph => {
+                    const container = graph.closest('.dashboard-section');
+                    const containerWidth = container.offsetWidth;
+                    
+                    Plotly.relayout(graph, {
+                        width: containerWidth - 32, // Reduced padding
+                        height: 280, // Fixed smaller height
+                        'autosize': true,
+                        'margin': {
+                            l: 40,  // Smaller margins
+                            r: 40,
+                            t: 40,
+                            b: 40,
+                            pad: 2
+                        },
+                        'font': {
+                            size: 11 // Smaller font size for graph labels
+                        }
+                    });
+                });
+            }
+
+            // Resize graphs on page load
+            window.addEventListener('load', () => {
+                setTimeout(resizeGraphs, 100);
+            });
+
+            // Debounced resize handler
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeGraphs, 100);
+            });
+
+            // Observe DOM changes
+            const observer = new MutationObserver(() => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeGraphs, 100);
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+2024-10-07 10:20:37 [INFO] Directory 'D:\Documents\TechM\Green_Software_Development\Third Task\Projects & Docs\Docker Image\GreenTech Navigator\Result' created successfully!
+2024-10-07 10:20:37 [INFO] CSV file 'D:\Documents\TechM\Green_Software_Development\Third Task\Projects & Docs\Docker Image\GreenTech Navigator\Result\server_data.csv' created with headers.
+2024-10-07 10:20:37 [INFO] Appended new data to 'D:\Documents\TechM\Green_Software_Development\Third Task\Projects & Docs\Docker Image\GreenTech Navigator\Result\server_data.csv'.
+2024-10-07 10:20:37 [INFO] Collected and logged data: {'Date': '2024-10-07', 'Time': '10:20:37', 'Host-name': 'SanskarVegad', 'IP address': '192.168.210.158', 'CPU usage (%)': 6.7, 'RAM usage (%)': 82.1, 'Disk usage (%)': 25.2, 'Network usage (bytes)': 1050, 'Energy consumption (KWH)': 0.2692, 'CO2 emission (kt)': 0.0001}
+2024-10-07 10:20:58 [INFO] Directory 'D:\Documents\TechM\Green_Software_Development\Third Task\Projects & Docs\Docker Image\GreenTech Navigator\Result' already exists.
+2024-10-07 10:20:58 [INFO] Appended new data to 'D:\Documents\TechM\Green_Software_Development\Third Task\Projects & Docs\Docker Image\GreenTech Navigator\Result\server_data.csv'.
+2024-10-07 10:20:58 [INFO] Collected and logged data: {'Date': '2024-10-07', 'Time': '10:20:58', 'Host-name': 'SanskarVegad', 'IP address': '192.168.210.158', 'CPU usage (%)': 5.5, 'RAM usage (%)': 81.9, 'Disk usage (%)': 25.2, 'Network usage (bytes)': 23658, 'Energy consumption (KWH)': 0.2709, 'CO2 emission (kt)': 0.0001}
+2024-10-07 10:21:19 [INFO] Directory 'D:\Documents\TechM\Green_Software_Development\Third Task\Projects & Docs\Docker Image\GreenTech Navigator\Result' already exists.
+2024-10-07 10:21:19 [INFO] Appended new data to 'D:\Documents\TechM\Green_Software_Development\Third Task\Projects & Docs\Docker Image\GreenTech Navigator\Result\server_data.csv'.
+2024-10-07 10:21:19 [INFO] Collected and logged data: {'Date': '2024-10-07', 'Time': '10:21:19', 'Host-name': 'SanskarVegad', 'IP address': '192.168.210.158', 'CPU usage (%)': 5.1, 'RAM usage (%)': 82.0, 'Disk usage (%)': 25.2, 'Network usage (bytes)': 21786, 'Energy consumption (KWH)': 0.2698, 'CO2 emission (kt)': 0.0001}
+2024-10-07 10:21:39 [INFO] Data collection completed successfully.

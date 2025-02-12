@@ -1,0 +1,90 @@
+/* Component Styles */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing);
+}
+
+.logo {
+    height: 40px;
+    transition: var(--transition);
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.header-titles {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing);
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: white;
+}
+
+.nav-link:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+.metric-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: var(--spacing);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing);
+    margin-bottom: var(--spacing);
+}
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: rgba(46, 204, 113, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: var(--spacing-sm) 0;
+}
+
+.metric-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.chart-container {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: var(--spacing);
+    box-shadow: var(--shadow);
+    margin-bottom: var(--spacing);
+}

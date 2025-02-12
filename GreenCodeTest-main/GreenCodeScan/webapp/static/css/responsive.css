@@ -1,0 +1,40 @@
+/* Responsive Styles */
+@media (max-width: 1200px) {
+    .dashboard {
+        padding: 0 var(--spacing);
+    }
+}
+
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "energy"
+            "emissions"
+            "server"
+            "code";
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: var(--spacing);
+        text-align: center;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --spacing-lg: 1.5rem;
+        --spacing: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+    }
+}

@@ -1,0 +1,24 @@
+/* Animation Styles */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-section {
+    animation: slideUp 0.5s ease-out forwards;
+}
+
+.metric-card {
+    animation: fadeIn 0.5s ease-out forwards;
+}

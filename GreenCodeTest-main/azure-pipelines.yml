@@ -1,0 +1,76 @@
+trigger:
+  - main  # Trigger the pipeline on changes to the main branch
+
+pool:
+  name: 'Default'  # Use a Windows agent to match the Windows paths in your Jenkins script
+
+variables:
+  CLIENT_NAME: 'ZF'  # Assuming you need to set this since it was commented out in Jenkins
+  REPO_PATH: 'C:\\agent\\_work\\1\\s'
+  PYTHON_PATH: 'C:\\Users\\sansk\\AppData\\Local\\Programs\\Python\\Python312\\python.exe'
+  MAVEN_PATH: 'C:\\Users\\sansk\\Downloads\\apache-maven-3.9.6\\bin'
+  PATH: '$(MAVEN_PATH);$(PATH)'
+  # Uncomment and set if needed
+  # CAST_HIGHLIGHT_PATH: 'C:\\Users\\sansk\\Downloads\\Highlight-Automation-Command'
+  # PYTEST_PATH: 'C:\\Users\\sansk\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\pytest.exe'
+  # SHAREPOINT_PS_SCRIPT_PATH: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\GreenCodeScanPipeline\\upload_to_sharepoint.ps1'
+
+stages:
+  # - stage: CloneRepository
+  #   displayName: 'Stage 1: Clone Repository'
+  #   jobs:
+  #     - job: Clone
+  #       displayName: 'Clone Repository Job'
+  #       steps:
+  #         - script: |
+  #             git clone --branch main https://github.com/sanskar22003/GreenCodeScan.git "$(REPO_PATH)"
+  #           displayName: 'Clone Git Repository'
+  #           # If the repository is private, handle authentication as shown below
+  #           # Example using a personal access token (PAT) stored as a secret variable:
+  #           # git clone --branch main https://$(GITHUB_PAT)@github.com/sanskar22003/GreenCodeScan.git "$(REPO_PATH)"
+  #           # Ensure GITHUB_PAT is defined in the pipeline variables as a secret
+  - stage: CloneRepository
+    displayName: 'Stage 1: Clone Repository'
+    jobs:
+      - job: CloneRepository
+        steps:
+          - checkout: self
+          - script: |
+              echo "Client Name: $(CLIENT_NAME)"
+              echo "Repository is cloned to: $(Pipeline.Workspace)/s"
+              
+  - stage: TrackServerEmissions
+    displayName: 'Stage 2: Track Server Emissions'
+    jobs:
+      - job: TrackEmissions
+        displayName: 'Track Server Emissions Job'
+        steps:
+          - script: |
+              cd "$(REPO_PATH)"
+              "$(PYTHON_PATH)" server_emissions.py
+            displayName: 'Run server_emissions.py'
+            # By default, if the script exits with a non-zero code, the job will fail
+
+  - stage: GreenCodeRefiner
+    displayName: 'Stage 3: Green Code Refiner'
+    jobs:
+      - job: RefineCode
+        displayName: 'Green Code Refiner Job'
+        steps:
+          - script: |
+              cd "$(REPO_PATH)"
+              "$(PYTHON_PATH)" GreenCodeRefiner.py
+            displayName: 'Run GreenCodeRefiner.py'
+
+  - stage: DynamicCodeAnalysis
+    displayName: 'Stage 4: Dynamic Code Analysis'
+    jobs:
+      - job: CodeAnalysis
+        displayName: 'Dynamic Code Analysis Job'
+        steps:
+          - script: |
+              cd "$(REPO_PATH)"
+              "$(PYTHON_PATH)" track_emissions.py
+            displayName: 'Run track_emissions.py'
+            env:
+              PYTEST: 'C:\\Users\\sansk\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\pytest.exe'
