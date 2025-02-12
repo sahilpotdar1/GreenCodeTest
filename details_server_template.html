@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Emissions Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --secondary: #3498db;
+            --text: #2c3e50;
+            --background: #f8fafb;
+            --card-bg: #ffffff;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --shadow: 0 8px 30px rgba(0,0,0,0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Header */
+        :root {
+            --primary-color: #10b981;
+            --primary-dark: #059669;
+            --secondary-color: #0ea5e9;
+            --text-color: #1f2937;
+            --text-light: #4b5563;
+            --background-color: #f9fafb;
+            --white: #ffffff;
+            --shadow-lg-header: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition-header: all 0.3s ease;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(to bottom, var(--background-color), var(--white));
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 4rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .header-titles {
+            display: flex;
+            gap: 0.25rem;
+            align-items: baseline;
+            min-width: 0;
+        }
+
+        .green {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .coderefiner {
+            color: var(--text-color);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        /* Navigation adjustments */
+        nav {
+            margin-left: 2rem;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition-header);
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+        }
+        .content {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 0.5s;
+            margin-top: 7%;
+        }
+
+        .dropdown-container {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .dropdown-container label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text);
+            background-color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        select:hover, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .tables-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: nowrap; /* Prevents wrapping to next line */
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .table-box {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(20px);
+            overflow: auto; /* Adds scroll if content overflows vertically */
+        }
+
+        .table-box.show {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .table-box h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .table-box h2 i {
+            color: var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        table th {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--text);
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        table tr:last-child td {
+            border-bottom: none;
+        }
+
+        table tbody tr {
+            transition: var(--transition);
+        }
+
+        table tbody tr:hover {
+            background: rgba(46, 204, 113, 0.05);
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 3rem;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            color: #666;
+            font-size: 1.1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .no-data-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive table for smaller screens */
+        @media (max-width: 768px) {
+            .tables-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 600px; /* Adjust based on your content */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 0 1rem;
+            }
+
+            .table-box {
+                padding: 1rem;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+                padding: 0 1.5rem;
+            }
+            
+            nav ul {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                height: auto;
+                padding: 1rem 0;
+            }
+            
+            nav {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+            }
+            
+            .logo-container {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.5rem;
+            }
+        } 
+               /* Add new styles for masonry layout */
+               .server-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .graph-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            height: 400px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subvalue {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+       
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content container">
+            <div class="logo-container">
+                <!-- <img src="https://www.techmahindra.com/themes/custom/techm/techm_logo.svg" alt="Tech Mahindra Logo" class="logo"> -->
+                <i class="fas fa-leaf logo-icon"></i>
+                <div class="header-titles">
+                    <h1 class="green">Green</h1>
+                    <h1 class="coderefiner">CodeRefiner<sup>TM</sup></h1>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="recommendations_report.html">View Recommendation Report</a></li>
+                    <li><a href="details_report.html">View Detailed Code Report</a></li>
+                    <li><a href="emissions_report.html">Back to Main Report</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="content">
+        <div class="dropdown-container">
+            <label for="solutionDirSelect">
+                <i class="fas fa-server"></i>
+                Select Server
+            </label>
+            <select id="solutionDirSelect">
+                <option value="" disabled selected>-- Select Server --</option>
+                {% for server in unique_servers %}
+                    <option value="{{ server }}">{{ server }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div id="serverDetails" style="display: none;">
+            <!-- Server Name -->
+            <div class="server-name">
+                <i class="fas fa-server"></i>
+                <span id="selectedServerName">Server Name</span>
+            </div>
+
+            <!-- Operating System Section -->
+            <div class="section-title">
+                <i class="fas fa-desktop"></i>
+                Operating System
+            </div>
+            <div class="grid-container">
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">OS Version</span>
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <div class="card-value" id="osVersion"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">OS Type</span>
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <div class="card-value" id="osType"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Region</span>
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="card-value" id="region"></div>
+                </div>
+            </div>
+
+            <!-- Server Information Section -->
+            <div class="section-title">
+                <i class="fas fa-server"></i>
+                Server Information
+            </div>
+            <div class="grid-container">
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Total CO2 Emissions</span>
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="card-value" id="totalCO2"></div>
+                    <div class="card-subvalue" id="cpuCO2"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">RAM CO2 Emissions</span>
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="card-value" id="ramCO2"></div>
+                    <div class="card-subvalue" id="co2Factor"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Total RAM</span>
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <div class="card-value" id="ramTotal"></div>
+                    <div class="card-subvalue" id="ramUsage"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Total Power</span>
+                        <i class="fas fa-battery-full"></i>
+                    </div>
+                    <div class="card-value" id="totalPower"></div>
+                    <div class="card-subvalue" id="powerDetails"></div>
+                </div>
+            </div>
+
+            <!-- Disk Information Section -->
+            <div class="section-title">
+                <i class="fas fa-hdd"></i>
+                Disk Information
+            </div>
+            <div class="grid-container">
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Total Disk Read</span>
+                        <i class="fas fa-hdd"></i>
+                    </div>
+                    <div class="card-value" id="diskRead"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Total Disk Write</span>
+                        <i class="fas fa-hdd"></i>
+                    </div>
+                    <div class="card-value" id="diskWrite"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Disk Base CO2</span>
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="card-value" id="diskBaseCO2"></div>
+                </div>
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Disk I/O CO2</span>
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="card-value" id="diskIOCO2"></div>
+                </div>
+            </div>
+
+            <!-- Storage Information Section -->
+            <div class="section-title">
+                <i class="fas fa-database"></i>
+                Storage Information 
+            </div>
+            <div class="grid-container">
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="card-title">Storage Device Count</span>
+                        <i class="fas fa-hdd"></i>
+                    </div>
+                    <div class="card-value" id="storageDeviceCount"></div>
+                    <div class="card-subvalue" id="storageDevices"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/template" id="serverData">
+        {{ server_details | tojson }}
+    </script>
+
+    <script>
+         // Helper function to format small numbers
+        function formatSmallNumber(number) {
+            if (number < 0.001) {
+                // Convert scientific notation to a fixed number of decimal places
+                return (number * 1000000).toFixed(4) + ' µg'; // Convert to micrograms
+            } else if (number < 1) {
+                // For numbers less than 1 but greater than 0.001
+                return (number * 1000).toFixed(4) + ' mg'; // Convert to milligrams
+            } else {
+                // For numbers greater than or equal to 1
+                return number.toFixed(4) + ' g';
+            }
+        }
+        // Parse the server details data passed from Python
+        const serverData = JSON.parse(document.getElementById('serverData').textContent);
+
+        $(document).ready(function(){
+        $('#solutionDirSelect').on('change', function(){
+            const selectedHostname = $(this).val();
+            
+            if(selectedHostname) {
+                const serverDetails = serverData.find(server => server.hostname === selectedHostname);
+                
+                if(serverDetails) {
+                    // Update UI elements
+                    $('#selectedServerName').text(selectedHostname);
+                    
+                    // Operating System Section
+                    $('#osVersion').text(serverDetails.os_version);
+                    $('#osType').text(serverDetails.os_type);
+                    $('#region').text(serverDetails.region);
+                    
+                    // Server Information Section - Using the new formatting function
+                    $('#totalCO2').text(formatSmallNumber(serverDetails.total_co2));
+                    $('#cpuCO2').text(`CPU CO2: ${formatSmallNumber(serverDetails.cpu_co2)}`);
+                    $('#ramCO2').text(formatSmallNumber(serverDetails.ram_co2));
+                    $('#co2Factor').text(`CO2 Factor: ${serverDetails.co2_factor}`);
+                    
+                    // RAM Information
+                    $('#ramTotal').text(`${serverDetails.ram_total.toFixed(2)}GB`);
+                    $('#ramUsage').text(`Used: ${serverDetails.ram_used.toFixed(2)}GB (${serverDetails.ram_percent.toFixed(2)}%)`);
+                    
+                    // Power Information
+                    $('#totalPower').text(`${serverDetails.total_power.toFixed(2)}W`);
+                    $('#powerDetails').text(`CPU: ${serverDetails.cpu_power.toFixed(2)}W, RAM: ${serverDetails.ram_power.toFixed(2)}W`);
+                    
+                    // Disk Information
+                    $('#diskRead').text(`${(serverDetails.disk_read_bytes / (1024 * 1024)).toFixed(2)}MB/s`);
+                    $('#diskWrite').text(`${(serverDetails.disk_write_bytes / (1024 * 1024)).toFixed(2)}MB/s`);
+                    $('#diskBaseCO2').text(formatSmallNumber(serverDetails.disk_base_co2));
+                    $('#diskIOCO2').text(formatSmallNumber(serverDetails.disk_io_co2));
+                    
+                    // Storage Information
+                    $('#storageDeviceCount').text(serverDetails.storage_device_count);
+                    $('#storageDevices').text(`Devices: ${serverDetails.storage_devices}`);
+                    
+                    $('#serverDetails').show();
+                } else {
+                    console.error('No server details found for hostname:', selectedHostname);
+                }
+            } else {
+                $('#serverDetails').hide();
+            }
+        });
+    });
+    </script>
+    
+</body>
+</html>
