@@ -16,6 +16,11 @@ from codecarbon import EmissionsTracker
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 from plotly.subplots import make_subplots
+# Handle Future warnings
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="codecarbon")
+# Handle the nvml error 
+from pynvml import nvmlInit, nvmlShutdown, NVMLError
 
 
 # Load environment variables
@@ -114,92 +119,64 @@ def count_lines_of_code(file_path, language="python"):
         return 0
 
 def process_emissions_for_file(tracker, script_path, emissions_csv, file_type, result_dir, test_command):
-    # First check if it's a test file
-    if not is_test_file(script_path):
+    if not is_test_file(script_path) or not test_command:
         return
-    
-    # If no test command, return immediately
-    if not test_command:
-        return
-   
+
     emissions_data = None
     duration = 0
     test_output = 'Unknown'
-    script_name = os.path.basename(script_path)
-
-    # Count lines of code
     loc = count_lines_of_code(script_path)
-
-    # Extract 'solution dir' (immediate parent directory)
+    script_name = os.path.basename(script_path)
     solution_dir = os.path.basename(os.path.dirname(script_path))
     is_green_refined = os.path.commonpath([script_path, GREEN_REFINED_DIRECTORY]) == GREEN_REFINED_DIRECTORY
 
-    tracker_started = False
-    try:
-        # Start the emissions tracking ONLY for test files
-        tracker = EmissionsTracker(allow_multiple_runs=True)
-        tracker.start()
-        tracker_started = True
+    # Set country via environment variable
+    # os.environ["COUNTRY_ISO_CODE"] = "IND"  # Add this line
 
-        start_time = time.time()
-        try:
-            # Run test command for test files
+    try:
+        nvmlInit()  # Initialize NVML
+        with EmissionsTracker() as tracker:
+            start_time = time.time()
             test_result = subprocess.run(test_command, capture_output=True, text=True, timeout=20)
             duration = time.time() - start_time
             test_output = 'Pass' if test_result.returncode == 0 else 'Fail'
-        except subprocess.TimeoutExpired:
-            test_output = 'Timeout'
-    
+    except subprocess.TimeoutExpired:
+        test_output = 'Timeout'
+    except NVMLError as nvml_error:
+        logging.error(f"NVML error: {nvml_error}")
+        test_output = 'NVML Error'
     except Exception as e:
-        logging.error(f"An error occurred while processing {script_name}: {e}")
+        logging.error(f"Error processing {script_name}: {e}")
         test_output = 'Error'
-
     finally:
-        try:
-            if tracker_started:
-                emissions_data = tracker.stop()  # Stop the emissions tracking
-        except Exception as e:
-            logging.error(f"Error stopping the tracker for {script_name}: {e}")
+        nvmlShutdown()  # Shutdown NVML
 
-    if emissions_data is not None:
-        emissions_csv_default_path = 'emissions.csv'
-        emissions_csv_target_path = os.path.join(result_dir, 'emissions.csv')
-        try:
-            if os.path.exists(emissions_csv_default_path):
-                shutil.move(emissions_csv_default_path, emissions_csv_target_path)
+    emissions_csv_target = os.path.join(result_dir, 'emissions.csv')
+    if os.path.exists('emissions.csv'):
+        shutil.move('emissions.csv', emissions_csv_target)
 
-            if os.stat(emissions_csv_target_path).st_size != 0:
-                emissions_data = pd.read_csv(emissions_csv_target_path).iloc[-1]
-                
+    if os.path.exists(emissions_csv_target) and os.stat(emissions_csv_target).st_size > 0:
+        try:
+            emissions_df = pd.read_csv(emissions_csv_target)
+            if emissions_df.empty:
+                logging.warning(f"Skipping empty emissions file: {emissions_csv_target}")
+                return
+            if not emissions_df.empty:
+                latest_emission = emissions_df.iloc[-1]
                 data = [
-                    os.path.basename(script_path),
-                    file_type,
-                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    f"{emissions_data['emissions'] * 1000:.6f}",
-                    f"{duration:.2f}",
-                    f"{emissions_data['emissions_rate'] * 1000:.6f}",
-                    f"{emissions_data['cpu_power']:.6f}",
-                    f"{emissions_data['gpu_power']:.6f}",
-                    f"{emissions_data['ram_power']:.6f}",
-                    f"{emissions_data['cpu_energy'] * 1000:.6f}",
-                    f"{emissions_data['gpu_energy']:.6f}",
-                    f"{emissions_data['ram_energy'] * 1000:.6f}",
-                    f"{emissions_data['energy_consumed'] * 1000:.6f}",
-                    test_output,
-                    solution_dir,
-                    is_green_refined,
-                    loc  # Add the LOC count to the data
+                    script_name, file_type, datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    f"{latest_emission['emissions'] * 1000:.6f}", f"{duration:.2f}",
+                    f"{latest_emission['emissions_rate'] * 1000:.6f}",
+                    f"{latest_emission['cpu_power']:.6f}", f"{latest_emission['gpu_power']:.6f}",
+                    f"{latest_emission['ram_power']:.6f}", f"{latest_emission['cpu_energy'] * 1000:.6f}",
+                    f"{latest_emission['gpu_energy']:.6f}", f"{latest_emission['ram_energy'] * 1000:.6f}",
+                    f"{latest_emission['energy_consumed'] * 1000:.6f}", test_output,
+                    solution_dir, is_green_refined, loc
                 ]
-                with open(emissions_csv, 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow(data)
-                    file.flush()
-            else:
-                logging.error(f"No emissions data found for {script_path}")
+                with open(emissions_csv, 'a', newline='') as f:
+                    csv.writer(f).writerow(data)
         except Exception as e:
-            logging.error(f"Error processing emissions data for {script_path}: {e}")
-    else:
-        logging.error(f"Emissions data collection failed for {script_name}")
+            logging.error(f"Error writing data for {script_name}: {e}")
 
 def process_files_by_type(base_dir, emissions_data_csv, result_dir, file_extension, excluded_files, excluded_dirs, tracker, test_command_generator):
     files = []
@@ -373,7 +350,6 @@ process_folder(
 )
 logging.info("Emissions data processed successfully.")
 
-# Compare emissions logic
 def compare_emissions():
     # Load environment variables again (if needed)
     load_dotenv(dotenv_path=env_path, verbose=True, override=True)
@@ -390,7 +366,7 @@ def compare_emissions():
         logging.info(f"Refined emissions data file not found: {result_green_refined_dir}")
         return
 
-    # Read CSV files
+    # Read CSV files with float_precision option
     emissions_df = pd.read_csv(result_source_dir)
     emissions_after_df = pd.read_csv(result_green_refined_dir)
 
@@ -431,6 +407,11 @@ def compare_emissions():
         "Result"
     ]
 
+    # Format float columns to display with fixed decimal places
+    float_columns = ["Before", "After", "Final Emission"]
+    for col in float_columns:
+        result_df[col] = result_df[col].apply(lambda x: '{:.6f}'.format(x))
+
     # Create 'Result' folder if it doesn't exist
     if not os.path.exists(RESULT_DIR):
         os.makedirs(RESULT_DIR)
@@ -438,7 +419,7 @@ def compare_emissions():
     else:
         logging.info(f"Directory '{RESULT_DIR}' already exists.")
 
-    # Write to new CSV file
+    # Write to new CSV file with float_format parameter
     result_file_path = os.path.join(RESULT_DIR, "comparison_results.csv")
     result_df.to_csv(result_file_path, index=False)
 
